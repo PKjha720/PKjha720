@@ -1,4 +1,4 @@
-[![MasterHead](https://github.com/PKjha720/prabhat_jha/blob/main/make%20your%20readme.jpg)](https://github.com/PKjha720)
+[![MasterHead](https://github.com/PKjha720/PKjha720/blob/main/make%20your%20readme.jpg)](https://github.com/PKjha720)
 
 <h1 align="center">
   <img src="https://user-images.githubusercontent.com/74038190/213844263-a8897a51-32f4-4b3b-b5c2-e1528b89f6f3.png" alt="icon" width="90" height="90" />
