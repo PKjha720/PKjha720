@@ -12,8 +12,7 @@
 - 🌱 I’m currently learning **Large Language Models (LLMs), Reinforcement Learning, and Cloud Architecture**
 - 👨‍💻 All of my projects are available at [my GitHub](https://github.com/PKjha720)
 - 💬 Ask me about **Machine Learning, Natural Language Processing, and Predictive Analytics**
-- 📫 How to reach me: **[prabhatbit2016@gmail.com](mailto:prabhatbit2016@gmail.com)**
-- 📄 Know about my experiences: [Resume](https://drive.google.com/file/d/1JEB3-BBDE4dwoSnCCbWQ51_bqEoQlHSH/view?usp=sharing)
+
 
 
 <h3>Summary:</h3>
