@@ -1,199 +1,64 @@
-<div align="center">
+# Prabhat Kumar Jha
 
-<!-- ANIMATED HEADER -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a192f,50:00e5ff,100:7b2fff&height=220&section=header&text=Prabhat%20Kumar%20Jha&fontSize=42&fontColor=ffffff&fontAlignY=35&desc=ML%20%2F%20AI%20%2F%20GenAI%20Engineer&descSize=16&descColor=64ffda&descAlignY=55&animation=fadeIn" width="100%" />
+**Senior Associate, Artificial Intelligence Operations — Bread Financial**
+Retrieval systems for domains where a missed document has a cost: aviation safety, regulatory compliance, financial services.
 
-<br/>
-
-<!-- TYPING SVG -->
-<a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=22&duration=3000&pause=1000&color=00E5FF&center=true&vCenter=true&multiline=true&repeat=true&width=700&height=80&lines=Building+production+RAG+systems+for+regulated+industries;Custom+pipelines.+No+framework+crutches.+Ship+to+prod." alt="Typing SVG" /></a>
-
-<br/><br/>
-
-<!-- SOCIAL BADGES -->
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/prabhat-kumar-jha-46a777100/)
-[![Portfolio](https://img.shields.io/badge/Portfolio-00E5FF?style=for-the-badge&logo=googlechrome&logoColor=0a192f)](https://pkjha720.github.io/portfolio/)
-[![Gmail](https://img.shields.io/badge/Email-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:pkjha720@gmail.com)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PKjha720)
-
-</div>
+prabhatbit2016@gmail.com · [LinkedIn](https://www.linkedin.com/in/prabhat-kumar-jha-46a777100/) · [Portfolio](https://pkjha720.github.io/portfolio/) · [ORCID](https://orcid.org/0009-0003-0851-2481)
 
 ---
 
-<img align="right" src="https://github-readme-stats.vercel.app/api?username=PKjha720&show_icons=true&theme=tokyonight&hide_border=true&bg_color=0a192f&title_color=00e5ff&icon_color=7b2fff&text_color=e0e0f0&count_private=true" width="400"/>
+## What I work on
 
-### `$ whoami`
+I build and operate retrieval pipelines in production. At Bread Financial I work on the Content and Knowledge Management team's enterprise retrieval platform, built on Haystack, Redis and LiteLLM and deployed on AWS EKS, where I am responsible for pipeline reliability, security patching and architectural changes to the retrieval stack.
 
-Aviation domain expert → self-taught AI engineer.
+Before this I spent four years at Airports Authority of India as a Junior Executive (Technical). The production ML infrastructure there was mine end to end: streaming ingestion across more than 50 airport subsystems using Kafka and PySpark, FastAPI services with role-based access control, CI/CD, Prometheus and Grafana monitoring, drift detection with PSI and KS tests, and automated retraining triggers behind the deployed forecasting models.
 
-I work at **Airports Authority of India**, where I discovered how painful it is to search through thousands of pages of regulatory documents. So I **built a RAG system** that solves it — from scratch, without LangChain.
+## AeroRAG — hybrid retrieval over civil aviation regulation
 
-Every line of code is mine. No bootcamps, no course certificates — just docs, papers, and building things until they work.
+[Code](https://github.com/PKjha720/aviation-rag) · [Live demo](https://aviation-rag-by-prabhat.streamlit.app) · [Preprint](https://doi.org/10.5281/zenodo.22382810)
 
-<br clear="right"/>
+Retrieval and question answering over 43 DGCA and ICAO regulatory documents: 10,572 chunks, 368 of them derived from tables. BM25 sparse retrieval runs alongside a ChromaDB bi-encoder index, the two are merged by Reciprocal Rank Fusion at k=60, rescored by an ms-marco-MiniLM cross-encoder, and answered with citation-enforced prompting through a Groq-hosted model. There is no retrieval framework underneath it, which is what makes each stage independently ablatable.
 
----
+Four-way ablation on an 80-question benchmark stratified by evidence type:
 
-<div align="center">
+| Configuration | Recall@5 | MRR@10 |
+|:---|---:|---:|
+| Dense only | 0.69 | 0.660 |
+| RRF fused, no reranking | 0.76 | 0.655 |
+| Full pipeline | 0.80 | 0.725 |
+| BM25 + reranking | 0.80 | 0.730 |
 
-## ⚡ Flagship: Aviation RAG System
+Two things came out of this that were worth the work. Reranking earns its keep on ordering rather than coverage: it moves MRR@10 from 0.655 to 0.725 while Recall@5 moves only within sampling noise. And BM25 with the same reranker matched the full pipeline, which turned out to be a limitation of the benchmark rather than a result about retrieval, because synthetic questions reuse their source wording and never properly test the dense branch.
 
-[![Live Demo](https://img.shields.io/badge/🚀_LIVE_DEMO-00E5FF?style=for-the-badge&logoColor=0a192f)](https://aviation-rag-by-prabhat.streamlit.app)
-[![Source Code](https://img.shields.io/badge/SOURCE_CODE-7b2fff?style=for-the-badge&logo=github&logoColor=white)](https://github.com/PKjha720/aviation-rag)
+The decisive stage was ingestion, not retrieval architecture. Standard PDF extraction flattens tables into prose, so no table reached the index as a table. After rebuilding ingestion to preserve them, table-evidence queries still retrieve at 0.675 Recall@5 against 0.925 for prose (p=0.010), and 0.500 against 0.875 under dense retrieval alone (p=0.0006). Neither fusion nor reranking closes that gap. Since 21% of the corpus pages carry no text layer at all, a benchmark built from the index cannot see what ingestion discarded, so the paper argues for reporting a coverage audit alongside recall.
 
-</div>
+Deployed at roughly 2.3 s median end-to-end latency: 120 ms retrieval, 400 ms fusion and reranking, 1.8 s generation. Code, indices and the evaluation set are released under MIT.
 
-```
-📄 PDF Input → ✂️ Chunk → 🧬 Embed → 🔍 BM25 + Vector → ⚡ RRF Fusion → 🎯 Cross-Encoder → 🤖 LLM Response
-```
+## Other work
 
-> Production hybrid retrieval system processing **~9,483 chunks** across aviation regulatory documents.
-> Built **without LangChain** — custom pipeline using BM25 + vector search with Reciprocal Rank Fusion and cross-encoder reranking, served through Groq's Llama 3.3 70B.
+**Anomaly detection on airport infrastructure telemetry.** LSTM autoencoders against Isolation Forest and statistical baselines on high-frequency sensor data. The autoencoder surfaced failure precursors four to six hours ahead of the threshold-based monitoring in use. Write-up in progress.
 
-<details>
-<summary><b>🔧 Full Tech Stack (click to expand)</b></summary>
-<br/>
+**Demand forecasting across 60+ airports.** SARIMA, Prophet and XGBoost with Fourier-encoded seasonality. XGBoost with engineered temporal features reached 15% MAPE on 30-day horizons and held up better than SARIMA on non-stationary traffic.
 
-| Layer | Technology |
-|:------|:-----------|
-| PDF Processing | PyMuPDF |
-| Embeddings | sentence-transformers |
-| Vector Store | ChromaDB |
-| Sparse Retrieval | BM25 (rank-bm25) |
-| Fusion | Reciprocal Rank Fusion |
-| Reranking | Cross-Encoder (ms-marco) |
-| LLM | Groq Llama 3.3 70B |
-| Frontend | Streamlit |
-| Framework | **None** — custom pipeline |
+| Repository | |
+|:---|:---|
+| [industry-grade-rag-genai](https://github.com/PKjha720/industry-grade-rag-genai) | Production RAG API: containerised FastAPI, multi-stage Docker build, CI/CD gates, Prometheus observability, citation-validated JSON output |
+| [Kidney-Disease-Classification-MLflow-DVC](https://github.com/PKjha720/Kidney-Disease-Classification-MLflow-DVC) | Medical image classification with experiment tracking and data versioning |
+| [yt-comment-sentiment-analysis](https://github.com/PKjha720/yt-comment-sentiment-analysis) | Sentiment pipeline over noisy real-world comment text |
+| [Route-optimization](https://github.com/PKjha720/Route-optimization) | Route optimisation for logistics planning |
 
-</details>
+## Stack
 
----
+| | |
+|:---|:---|
+| **Retrieval** | BM25, dense bi-encoders, hybrid retrieval, Reciprocal Rank Fusion, cross-encoder reranking, ChromaDB, FAISS, Haystack, RAGAS |
+| **ML** | PyTorch, TensorFlow, scikit-learn, XGBoost, HuggingFace Transformers, sentence-transformers |
+| **Time series** | LSTM/GRU, ARIMA/SARIMA, Prophet, Isolation Forest |
+| **Infrastructure** | Docker, Kubernetes, AWS (EKS, SageMaker), Kafka, Spark, MLflow, Redis, LiteLLM |
+| **Services** | FastAPI, Prometheus, Grafana, Git, LaTeX |
 
-## 🏗️ Other Projects
+## Background
 
-<table>
-<tr>
-<td width="50%" valign="top">
+B.E. Mechanical Engineering, Birla Institute of Technology, Mesra. CGPA 8.32/10, university batch topper, Tata Millennial Scholar. GATE CS/IT 99.28 percentile. All India Rank 3 in the Airports Authority of India national recruitment exam, from a field of more than 150,000.
 
-### 🧪 Industry-Grade RAG
-End-to-end RAG pipeline with production architecture patterns
-
-[![Repo](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/PKjha720/industry-grade-rag-genai)
-
-`RAG` `GenAI` `LLM` `Python`
-
-</td>
-<td width="50%" valign="top">
-
-### 🫁 Kidney Disease Classification
-Medical image classification with full MLOps pipeline
-
-[![Repo](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/PKjha720/Kidney-Disease-Classification-MLflow-DVC)
-
-`MLflow` `DVC` `Deep Learning` `CNN`
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 💬 YT Sentiment Analysis
-NLP pipeline for real-time sentiment on YouTube comments
-
-[![Repo](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/PKjha720/yt-comment-sentiment-analysis)
-
-`NLP` `Sentiment Analysis` `Python`
-
-</td>
-<td width="50%" valign="top">
-
-### 📋 ATS Tracker — Gemini Pro
-LLM-powered resume-JD matching tool
-
-[![Repo](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/PKjha720/ATS-tracking-LLM-with-Google-Gemini-Pro)
-
-`Google Gemini Pro` `LLM` `Streamlit`
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🗺️ Route Optimization
-Algorithmic route optimization for logistics
-
-[![Repo](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github)](https://github.com/PKjha720/Route-optimization)
-
-`Python` `Optimization` `Algorithms`
-
-</td>
-<td width="50%" valign="top">
-
-### 🎓 Portfolio Website
-My portfolio — built from scratch, no templates
-
-[![Live](https://img.shields.io/badge/Visit-00E5FF?style=flat-square)](https://pkjha720.github.io/portfolio/)
-
-`HTML` `CSS` `JavaScript`
-
-</td>
-</tr>
-</table>
-
----
-
-## 🧠 Tech Stack
-
-<div align="center">
-
-| Category | Technologies |
-|:---------|:------------|
-| **Retrieval & Search** | `BM25` `Vector Search` `Hybrid Retrieval` `Cross-Encoder Reranking` `RRF` `ChromaDB` `FAISS` |
-| **LLM & GenAI** | `RAG Architecture` `Prompt Engineering` `Groq API` `Gemini API` `Custom Pipelines` |
-| **ML & Deep Learning** | `PyTorch` `scikit-learn` `Transformers` `sentence-transformers` `CNNs` |
-| **MLOps & Infra** | `MLflow` `DVC` `Docker` `Streamlit` `Git` `Linux` |
-| **Data** | `PyMuPDF` `pandas` `SQL` `NumPy` |
-
-</div>
-
----
-
-## 📊 Numbers That Hit Different
-
-<div align="center">
-
-| GRE | GATE '22 | GATE '21 | AAI | JEE Advanced '14 | CGPA |
-|:---:|:--------:|:--------:|:---:|:-----------------:|:----:|
-| **339/340** | **99.28%ile** | **99.16%ile** | **AIR 3** | **99.2%ile** | **8.32/10** |
-| 170Q · 169V | CS/IT | CS/IT | 105/120 | National | BIT Mesra · Batch Topper |
-
-</div>
-
----
-
-## 📈 GitHub Activity
-
-<div align="center">
-
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=PKjha720&layout=compact&theme=tokyonight&hide_border=true&bg_color=0a192f&title_color=00e5ff&text_color=e0e0f0" width="400" />
-
-<br/><br/>
-
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=PKjha720&theme=tokyonight&hide_border=true&background=0a192f&stroke=1a1a3a&ring=00e5ff&fire=ff2d6b&currStreakLabel=00e5ff&sideLabels=7b2fff&currStreakNum=e0e0f0&sideNums=e0e0f0&dates=6a6a8a" width="500" />
-
-<br/><br/>
-
-<img src="https://github-readme-activity-graph.vercel.app/graph?username=PKjha720&theme=tokyo-night&hide_border=true&bg_color=0a192f&color=00e5ff&line=7b2fff&point=ff2d6b&area=true&area_color=00e5ff" width="95%" />
-
-</div>
-
----
-
-<div align="center">
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0a192f,50:00e5ff,100:7b2fff&height=120&section=footer" width="100%" />
-
-**Built by Prabhat · No templates were harmed · 2026**
-
-</div>
+Design lead on the pneumatic gear shifter for BIT Mesra's Formula Student car: a solenoid-actuated shifting system sized against a measured 250 N shift force, closed in software on an Arduino reading the engine's gear-position sensor. AIR 7 overall and AIR 4 in the Design Event at Formula Student India 2017. I raised ₹11 lakh in sponsorship across two campaigns and trained roughly 40 students a year on vehicle design and fabrication.
